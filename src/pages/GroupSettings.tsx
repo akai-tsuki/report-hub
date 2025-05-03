@@ -17,18 +17,15 @@ import {
   CircularProgress,
   Paper,
   Divider,
-  AppBar,
-  Toolbar,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { getGroups, createGroup, updateGroup, deleteGroup } from '../services/reports';
 import { GroupConfig } from '../types';
 import { useAuth } from '../context/AuthContext';
-import { signOut } from '../services/auth';
+import Header from '../components/layout/Header';
 
 const GroupSettings: React.FC = () => {
   const navigate = useNavigate();
@@ -70,14 +67,6 @@ const GroupSettings: React.FC = () => {
     navigate('/reports');
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/login');
-    } catch (error) {
-      console.error('Sign out failed', error);
-    }
-  };
 
   const handleAddGroup = async () => {
     if (!newGroupName.trim()) return;
@@ -163,16 +152,7 @@ const GroupSettings: React.FC = () => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Report Hub
-          </Typography>
-          <Button color="inherit" onClick={handleSignOut} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Header title="Group Settings" />
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

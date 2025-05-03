@@ -9,8 +9,6 @@ import {
   Paper,
   Breadcrumbs,
   Link,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReplyIcon from "@mui/icons-material/Reply";
@@ -19,8 +17,7 @@ import { ReportPostWithChildren, ReportThread } from "../types";
 import { useAuth } from "../context/AuthContext";
 import PostTree from "../components/reports/PostTree";
 import ReplyDialog from "../components/reports/ReplyDialog";
-import { signOut } from "../services/auth";
-import LogoutIcon from "@mui/icons-material/Logout";
+import Header from "../components/layout/Header";
 
 const ReportContent: React.FC = () => {
   const { threadId } = useParams<{ threadId: string }>();
@@ -65,14 +62,6 @@ const ReportContent: React.FC = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/login");
-    } catch (error) {
-      console.error("Sign out failed", error);
-    }
-  };
 
   const handleBackClick = () => {
     navigate("/reports");
@@ -116,16 +105,7 @@ const ReportContent: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Report Hub
-          </Typography>
-          <Button color="inherit" onClick={handleSignOut} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Header title={thread.title} />
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         <Breadcrumbs sx={{ mb: 2 }}>

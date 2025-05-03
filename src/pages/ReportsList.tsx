@@ -9,19 +9,16 @@ import {
   Divider,
   CircularProgress,
   Paper,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import LogoutIcon from "@mui/icons-material/Logout";
 import { getThreads } from "../services/reports";
-import { signOut } from "../services/auth";
 import { ReportThread } from "../types";
 import { useAuth } from "../context/AuthContext";
 import ThreadListItem from "../components/reports/ThreadListItem";
 import NewThreadDialog from "../components/reports/NewThreadDialog";
 import NewPostDialog from "../components/reports/NewPostDialog";
+import Header from "../components/layout/Header";
 import { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 
 const ReportsList: React.FC = () => {
@@ -68,14 +65,6 @@ const ReportsList: React.FC = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate("/login");
-    } catch (error) {
-      console.error("Sign out failed", error);
-    }
-  };
 
   const handleNewThread = () => {
     setNewThreadDialogOpen(true);
@@ -101,16 +90,7 @@ const ReportsList: React.FC = () => {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Report Hub
-          </Typography>
-          <Button color="inherit" onClick={handleSignOut} startIcon={<LogoutIcon />}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Header />
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
