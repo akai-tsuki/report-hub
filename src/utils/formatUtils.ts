@@ -44,6 +44,11 @@ export const formatThreadListItem = (thread: ReportThread): string => {
   const template = formatConfig.thread.listFormat;
   const dateStr = formatDate(thread.createdAt);
   
+  // 重要度情報を取得
+  // スレッド自体には優先度がないため、ルート投稿から取得したいが、
+  // ここでは参照できないため、空文字列で対応
+  const priorityStr = ''; // 実際には表示される部分がなくなる
+  
   // グループが存在しない場合は、@記号を省略
   let authorWithGroup = thread.authorName;
   if (thread.group) {
@@ -54,6 +59,7 @@ export const formatThreadListItem = (thread: ReportThread): string => {
     .replace('{{ authorName }}', thread.authorName)
     .replace('{{ group }}', thread.group || '')
     .replace('{{ title }}', thread.title)
+    .replace('{{ priority }}', priorityStr)
     .replace('{{ createdAt }}', dateStr);
 };
 
@@ -71,10 +77,14 @@ export const formatPostAuthorInfo = (post: ReportPost | ReportPostWithChildren):
   // 日付をフォーマット
   const dateStr = formatDate(post.createdAt);
   
+  // 優先度をフォーマット
+  const priorityStr = formatPriority(post.priority as PriorityLevel);
+  
   // テンプレートの変数を実際の値に置換
   return template
     .replace('{{ authorName }}', post.authorName)
     .replace('{{ group }}', post.group || '')
+    .replace('{{ priority }}', priorityStr || '')
     .replace('{{ createdAt }}', dateStr);
 };
 

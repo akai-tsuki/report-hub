@@ -2,12 +2,12 @@
   "post": {
     "title": "{{ title }}",
     "titleWithRecipient": "{{ title }} （To: {{ recipient }}）",
-    "authorInfo": "{{ authorName }}＠{{ group }} ( {{ createdAt }} )",
-    "authorInfoWithoutGroup": "{{ authorName }} ( {{ createdAt }} )",
+    "authorInfo": "{{ authorName }}＠{{ group }}：{{ priority }} ( {{ createdAt }} )",
+    "authorInfoWithoutGroup": "{{ authorName }}：{{ priority }} ( {{ createdAt }} )",
     "content": "{{ content }}"
   },
   "thread": {
-    "listFormat": "【{{ authorName }}＠{{ group }}】{{ title }}  {{ createdAt }}"
+    "listFormat": "【{{ authorName }}＠{{ group }}】{{ title }}：{{ priority }}  {{ createdAt }}"
   },
   "hierarchyTree": {
     "threadPrefix": "■",
