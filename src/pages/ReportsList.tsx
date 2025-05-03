@@ -13,12 +13,15 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { getThreads, getThreadsWithRootPosts } from "../services/reports";
-import { ReportThread, ReportPostWithChildren } from "../types";
+import { ReportThread, ReportPostWithChildren, ReportPost } from "../types";
 import { useAuth } from "../context/AuthContext";
 import ThreadListItem from "../components/reports/ThreadListItem";
 import ThreadPostsTree from "../components/reports/ThreadPostsTree";
 import NewThreadDialog from "../components/reports/NewThreadDialog";
 import NewPostDialog from "../components/reports/NewPostDialog";
+import PostDetail from "../components/reports/PostDetail";
+import ThreadView from "../components/reports/ThreadView";
+import ReplyDialog from "../components/reports/ReplyDialog";
 import Header from "../components/layout/Header";
 import { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 
@@ -33,6 +36,17 @@ const ReportsList: React.FC = () => {
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [newThreadDialogOpen, setNewThreadDialogOpen] = useState(false);
   const [newPostDialogOpen, setNewPostDialogOpen] = useState(false);
+  
+  // 表示モード管理
+  type DisplayMode = 'list' | 'post' | 'thread';
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('list');
+  
+  // 投稿詳細・スレッド表示用の状態
+  const [selectedPost, setSelectedPost] = useState<ReportPost | null>(null);
+  const [currentThread, setCurrentThread] = useState<ReportThread | null>(null);
+  const [rootPost, setRootPost] = useState<ReportPostWithChildren | null>(null);
+  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
+  const [replyToPostId, setReplyToPostId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!currentUser) {
@@ -110,19 +124,23 @@ const ReportsList: React.FC = () => {
   };
   
   const handlePostClick = (postId: string) => {
-    // 対応するスレッドIDを特定して、詳細ページに遷移
+    // クリックされた投稿を見つけて表示する
     for (const item of threadsWithPosts) {
-      // ルート投稿の場合
+      // ルート投稿の場合はスレッド全体を表示
       if (item.rootPost.id === postId) {
-        navigate(`/reports/${item.thread.id}`);
+        setCurrentThread(item.thread);
+        setRootPost(item.rootPost);
+        setDisplayMode('thread');
         return;
       }
       
-      // 子投稿の場合（再帰的に探索）
+      // 子投稿の場合（再帰的に探索）- 個別投稿を表示
       const findPostInChildren = (children: ReportPostWithChildren[]): boolean => {
         for (const child of children) {
           if (child.id === postId) {
-            navigate(`/reports/${item.thread.id}`);
+            setSelectedPost(child);
+            setCurrentThread(item.thread);
+            setDisplayMode('post');
             return true;
           }
           
@@ -137,6 +155,28 @@ const ReportsList: React.FC = () => {
         break;
       }
     }
+  };
+  
+  // 詳細表示から一覧に戻る
+  const handleBackFromDetail = () => {
+    setSelectedPost(null);
+    setCurrentThread(null);
+    setRootPost(null);
+    setDisplayMode('list');
+  };
+  
+  // 返信ダイアログを開く
+  const handleReply = (postId: string) => {
+    if (postId) {
+      setReplyToPostId(postId);
+      setReplyDialogOpen(true);
+    }
+  };
+  
+  // 返信完了時の処理
+  const handleReplyComplete = () => {
+    setReplyDialogOpen(false);
+    loadThreadsAndPosts();
   };
 
   const handleThreadClick = (threadId: string) => {
@@ -206,6 +246,21 @@ const ReportsList: React.FC = () => {
             <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
               <CircularProgress />
             </Box>
+          ) : displayMode === 'post' && selectedPost ? (
+            // 個別投稿の詳細表示
+            <PostDetail 
+              post={selectedPost} 
+              onBack={handleBackFromDetail}
+              onReply={handleReply}
+            />
+          ) : displayMode === 'thread' && currentThread && rootPost ? (
+            // スレッド全体表示（全投稿表示）
+            <ThreadView
+              thread={currentThread}
+              rootPost={rootPost}
+              onBack={handleBackFromDetail}
+              onReplyClick={handleReply}
+            />
           ) : viewMode === 'simple' && threads.length === 0 ? (
             <Typography variant="body1" sx={{ p: 2, textAlign: "center" }}>
               No reports found. Create a new thread to get started.
@@ -270,6 +325,17 @@ const ReportsList: React.FC = () => {
         onClose={() => setNewPostDialogOpen(false)}
         onPostCreated={handlePostCreated}
       />
+      
+      {/* 返信ダイアログ */}
+      {replyDialogOpen && currentThread && replyToPostId && (
+        <ReplyDialog
+          open={replyDialogOpen}
+          threadId={currentThread.id}
+          parentId={replyToPostId}
+          onClose={() => setReplyDialogOpen(false)}
+          onReplySubmitted={handleReplyComplete}
+        />
+      )}
     </Box>
   );
 };

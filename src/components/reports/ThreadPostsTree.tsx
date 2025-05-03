@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { ReportThread, ReportPostWithChildren } from '../../types';
 import formatConfig from '../../config/format.json';
+import { formatDate } from '../../utils/formatUtils';
 
 interface ThreadPostsTreeProps {
   thread: ReportThread;
@@ -33,6 +34,10 @@ const getContinuePrefix = (isLast: boolean): string => {
 const displayPostTitle = (post: ReportPostWithChildren): string => {
   // 投稿にタイトルがあればそれを使用、なければ内容の最初の部分を表示
   if (post.title) {
+    // 宛先があれば追加
+    if (post.recipient) {
+      return `${post.title} （To: ${post.recipient}）`;
+    }
     return post.title;
   }
   
@@ -94,7 +99,21 @@ const PostItems: React.FC<{
                   textOverflow: 'ellipsis'
                 }}
               >
-                {displayPostTitle(post)}
+                <span style={{ fontWeight: post.title ? 'medium' : 'normal' }}>
+                  {displayPostTitle(post)}
+                </span>
+                {post.title && <span style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '0.9em' }}> - {post.authorName}{post.group ? `＠${post.group}` : ''}</span>}
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  ml: 2,
+                  color: 'text.secondary',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.85em'
+                }}
+              >
+                {formatDate(post.createdAt)}
               </Typography>
             </Box>
 
@@ -115,6 +134,17 @@ const PostItems: React.FC<{
 };
 
 /**
+ * 再帰的に投稿数をカウントする
+ */
+const countPosts = (post: ReportPostWithChildren): number => {
+  let count = 1; // 自分自身をカウント
+  for (const child of post.children) {
+    count += countPosts(child);
+  }
+  return count;
+};
+
+/**
  * スレッドとそのツリー構造の投稿を表示するコンポーネント
  */
 const ThreadPostsTree: React.FC<ThreadPostsTreeProps> = ({ 
@@ -122,12 +152,16 @@ const ThreadPostsTree: React.FC<ThreadPostsTreeProps> = ({
   rootPost,
   onPostClick
 }) => {
+  // 投稿の総数を計算
+  const totalPosts = countPosts(rootPost);
   return (
     <Paper 
       elevation={0} 
       sx={{ 
-        backgroundColor: 'transparent',
-        mb: 2 
+        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+        mb: 2,
+        p: 1,
+        borderRadius: 2
       }}
     >
       {/* スレッドタイトル */}
@@ -164,7 +198,28 @@ const ThreadPostsTree: React.FC<ThreadPostsTreeProps> = ({
             textOverflow: 'ellipsis'
           }}
         >
-          {thread.title}
+          {`【${thread.authorName}${thread.group ? `＠${thread.group}` : ''}】${thread.title}`}
+        </Typography>
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            ml: 2,
+            color: 'text.secondary',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+          <span>{formatDate(thread.createdAt)}</span>
+          <span style={{ 
+            fontSize: '0.85em', 
+            backgroundColor: 'rgba(0, 0, 0, 0.08)', 
+            padding: '2px 6px', 
+            borderRadius: '10px' 
+          }}>
+            {totalPosts} 件
+          </span>
         </Typography>
       </Box>
 

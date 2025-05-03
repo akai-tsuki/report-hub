@@ -350,13 +350,13 @@ export const getThreadWithPosts = async (threadId: string): Promise<{thread: Rep
 };
 
 // すべてのスレッドと、それぞれのルート投稿を取得する
-export const getThreadsWithRootPosts = async (limit = 10): Promise<{thread: ReportThread, rootPost: ReportPostWithChildren}[]> => {
+export const getThreadsWithRootPosts = async (limitCount = 10): Promise<{thread: ReportThread, rootPost: ReportPostWithChildren}[]> => {
   try {
     // まずスレッドを取得
     const threadsQuery = query(
       collection(db, "threads"),
       orderBy("createdAt", "desc"),
-      limit(limit)
+      limit(limitCount)
     );
     
     const threadsSnapshot = await getDocs(threadsQuery);
