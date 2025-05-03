@@ -102,7 +102,7 @@ const PostItems: React.FC<{
                 <span style={{ fontWeight: post.title ? 'medium' : 'normal' }}>
                   {displayPostTitle(post)}
                 </span>
-                {post.title && <span style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '0.9em' }}> - {post.authorName}{post.group ? `＠${post.group}` : ''}</span>}
+                {post.title && <span style={{ color: 'rgba(0, 0, 0, 0.6)', fontSize: '0.9em' }}> - {post.authorName}{post.group ? `＠${post.group}` : ''}{post.priority ? `：${formatPriority(post.priority as PriorityLevel)}` : ''}</span>}
               </Typography>
               <Typography 
                 variant="body2" 
