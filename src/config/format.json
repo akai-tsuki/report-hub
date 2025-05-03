@@ -7,7 +7,7 @@
     "content": "{{ content }}"
   },
   "thread": {
-    "listFormat": "【{{ authorName }}＠{{ group }}】{{ title }}：{{ priority }}  {{ createdAt }}"
+    "listFormat": "【{{ authorName }}＠{{ group }}：{{ priority }}】{{ title }}  {{ createdAt }}"
   },
   "hierarchyTree": {
     "threadPrefix": "■",

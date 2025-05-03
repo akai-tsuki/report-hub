@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { ReportThread, ReportPostWithChildren, PriorityLevel } from '../../types';
 import formatConfig from '../../config/format.json';
-import { formatDate, formatPriority } from '../../utils/formatUtils';
+import { formatDate, formatPriority, formatThreadListItem } from '../../utils/formatUtils';
 
 interface ThreadPostsTreeProps {
   thread: ReportThread;
@@ -198,7 +198,7 @@ const ThreadPostsTree: React.FC<ThreadPostsTreeProps> = ({
             textOverflow: 'ellipsis'
           }}
         >
-          {`【${thread.authorName}${thread.group ? `＠${thread.group}` : ''}】${thread.title}${rootPost.priority ? `：${formatPriority(rootPost.priority as PriorityLevel)}` : ''}`}
+          {formatThreadListItem(thread, rootPost.priority as PriorityLevel)}
         </Typography>
         <Typography 
           variant="body2" 

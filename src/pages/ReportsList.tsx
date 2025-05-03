@@ -273,15 +273,22 @@ const ReportsList: React.FC = () => {
             <>
               {viewMode === 'simple' ? (
                 <List>
-                  {threads.map((thread, index) => (
-                    <React.Fragment key={thread.id}>
-                      <ThreadListItem
-                        thread={thread}
-                        onClick={() => handleThreadClick(thread.id)}
-                      />
-                      {index < threads.length - 1 && <Divider component="li" />}
-                    </React.Fragment>
-                  ))}
+                  {threadsWithPosts.map((item, index) => {
+                    // スレッドとそのルート投稿を取得
+                    const thread = item.thread;
+                    const rootPost = item.rootPost;
+                    
+                    return (
+                      <React.Fragment key={thread.id}>
+                        <ThreadListItem
+                          thread={thread}
+                          priority={rootPost.priority as PriorityLevel}
+                          onClick={() => handleThreadClick(thread.id)}
+                        />
+                        {index < threadsWithPosts.length - 1 && <Divider component="li" />}
+                      </React.Fragment>
+                    );
+                  })}
                 </List>
               ) : (
                 <Box>

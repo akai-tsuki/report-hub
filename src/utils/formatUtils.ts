@@ -38,22 +38,15 @@ export const formatPostTitle = (post: ReportPost | ReportPostWithChildren): stri
 /**
  * スレッドの一覧表示用文字列を整形する
  * @param thread スレッドデータ
+ * @param priority 優先度（任意）
  * @returns フォーマットされた表示文字列
  */
-export const formatThreadListItem = (thread: ReportThread): string => {
+export const formatThreadListItem = (thread: ReportThread, priority?: PriorityLevel): string => {
   const template = formatConfig.thread.listFormat;
   const dateStr = formatDate(thread.createdAt);
   
   // 重要度情報を取得
-  // スレッド自体には優先度がないため、ルート投稿から取得したいが、
-  // ここでは参照できないため、空文字列で対応
-  const priorityStr = ''; // 実際には表示される部分がなくなる
-  
-  // グループが存在しない場合は、@記号を省略
-  let authorWithGroup = thread.authorName;
-  if (thread.group) {
-    authorWithGroup = `${thread.authorName}＠${thread.group}`;
-  }
+  const priorityStr = priority ? formatPriority(priority) : '';
   
   return template
     .replace('{{ authorName }}', thread.authorName)

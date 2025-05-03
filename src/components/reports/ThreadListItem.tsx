@@ -1,14 +1,15 @@
 import React from "react";
 import { ListItem, ListItemText, Typography, Box } from "@mui/material";
-import { ReportThread } from "../../types";
+import { ReportThread, PriorityLevel } from "../../types";
 import { formatThreadListItem } from "../../utils/formatUtils";
 
 interface ThreadListItemProps {
   thread: ReportThread;
   onClick: () => void;
+  priority?: PriorityLevel;
 }
 
-const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread, onClick }) => {
+const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread, onClick, priority }) => {
   return (
     <ListItem
       alignItems="center"
@@ -34,7 +35,7 @@ const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread, onClick }) => {
               textOverflow: 'ellipsis'
             }}
           >
-            {formatThreadListItem(thread)}
+            {formatThreadListItem(thread, priority)}
           </Typography>
         }
       />

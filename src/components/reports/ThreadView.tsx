@@ -3,7 +3,7 @@ import { Box, Typography, Button, Paper, Divider, IconButton } from '@mui/materi
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { ReportThread, ReportPostWithChildren, PriorityLevel } from '../../types';
 import PostTree from './PostTree';
-import { formatDate, formatPriority } from '../../utils/formatUtils';
+import { formatDate, formatPriority, formatThreadListItem } from '../../utils/formatUtils';
 
 interface ThreadViewProps {
   thread: ReportThread;
@@ -43,8 +43,7 @@ const ThreadView: React.FC<ThreadViewProps> = ({
         </Typography>
         
         <Typography variant="subtitle2" color="textSecondary">
-          {/* formatThreadListItemではなく、rootPostの優先度を使用して表示 */}
-          {`【${thread.authorName}${thread.group ? `＠${thread.group}` : ''}】${thread.title}${rootPost.priority ? `：${formatPriority(rootPost.priority as PriorityLevel)}` : ''} (${formatDate(thread.createdAt)})`}
+          {formatThreadListItem(thread, rootPost.priority as PriorityLevel)}
         </Typography>
       </Paper>
 
