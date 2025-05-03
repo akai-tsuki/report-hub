@@ -124,11 +124,14 @@ export const getPriorityOptions = (): { value: PriorityLevel, label: string }[] 
   
   // priorityConfigのキーをPriorityLevel型にキャストして使用
   Object.keys(priorityConfig).forEach(key => {
-    const priorityKey = key as PriorityLevel;
-    options.push({
-      value: priorityKey,
-      label: priorityConfig[priorityKey] || key
-    });
+    // 'none'は含めない
+    if (key !== 'none') {
+      const priorityKey = key as PriorityLevel;
+      options.push({
+        value: priorityKey,
+        label: priorityConfig[priorityKey] || key
+      });
+    }
   });
   
   return options;

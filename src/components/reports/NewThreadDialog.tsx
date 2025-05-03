@@ -236,7 +236,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
             >
               {getPriorityOptions().map((option) => (
                 <MenuItem key={option.value} value={option.value}>
-                  {option.value === 'none' ? <em>{option.label}</em> : option.label}
+                  {option.label}
                 </MenuItem>
               ))}
             </Select>
