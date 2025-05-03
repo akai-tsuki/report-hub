@@ -73,7 +73,47 @@ src/
    - Create a new Firestore database
    - Start in production mode
    - Choose a location closest to your users
-4. Update the Firebase configuration in `src/services/firebase.ts` with your project credentials:
+4. Set up Firestore Security Rules:
+   - Go to Firestore Database > Rules
+   - Update the rules with the content from `firestore.rules` or copy the rules below:
+   ```
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       // ユーザー認証済みかどうかのチェック関数
+       function isAuthenticated() {
+         return request.auth != null;
+       }
+       
+       // 指定されたドキュメントの作成者かどうかをチェックする関数
+       function isAuthor(resource) {
+         return resource.data.authorId == request.auth.uid;
+       }
+       
+       // すべてのユーザーは認証されていれば読み取り可能、書き込みは自分の作成したものだけ
+       match /threads/{threadId} {
+         allow read: if isAuthenticated();
+         allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+         allow update, delete: if isAuthenticated() && isAuthor(resource);
+       }
+       
+       match /posts/{postId} {
+         allow read: if isAuthenticated();
+         allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+         allow update, delete: if isAuthenticated() && isAuthor(resource);
+       }
+       
+       // グループは認証されたユーザーならだれでも読み取り可能
+       // グループの作成・編集・削除権限は必要に応じて制限してください
+       match /groups/{groupId} {
+         allow read: if isAuthenticated();
+         // 本番環境では必要に応じて制限を追加
+         allow write: if isAuthenticated();
+       }
+     }
+   }
+   ```
+5. Update the Firebase configuration in `src/services/firebase.ts` with your project credentials:
    ```typescript
    const firebaseConfig = {
      apiKey: "YOUR_API_KEY",
@@ -109,6 +149,51 @@ npm run build
 ```
 
 You can then deploy the contents of the `build` directory to any static hosting service like Firebase Hosting, Vercel, Netlify, etc.
+
+### Firebase Hosting Setup
+
+For deployment to Firebase Hosting:
+
+1. Install Firebase CLI globally (if not already installed):
+   ```
+   npm install -g firebase-tools
+   ```
+
+2. Login to Firebase:
+   ```
+   firebase login
+   ```
+
+3. Initialize Firebase in your project directory:
+   ```
+   firebase init
+   ```
+   - Select Hosting
+   - Choose your Firebase project
+   - Set public directory to `build`
+   - Configure as a single-page app: Yes
+   - Set up automatic builds and deploys with GitHub: No (or Yes if desired)
+
+4. Deploy to Firebase:
+   ```
+   firebase deploy
+   ```
+
+### Security Considerations for Production
+
+Before deploying to production, ensure the following security measures are in place:
+
+1. **Enforce Firestore Security Rules**: The provided rules restrict access based on authentication and ownership. Review and modify as needed for your specific requirements.
+
+2. **Admin Controls**: If you need admin functionality, consider implementing custom claims in Firebase Auth to designate admin users.
+
+3. **Rate Limiting**: Consider implementing rate limiting for API calls to prevent abuse.
+
+4. **Environment Variables**: Store sensitive configuration in environment variables rather than directly in the code.
+
+5. **Regular Backups**: Set up regular backups of your Firestore data.
+
+6. **Monitoring**: Enable Firebase monitoring to track usage and detect anomalies.
 
 ## Technologies Used
 
