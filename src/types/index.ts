@@ -9,6 +9,9 @@ export interface ReportPost {
   parentId: string | null;
   threadId: string;
   childrenIds: string[];
+  group?: string;
+  recipient?: string;
+  title?: string;
 }
 
 export interface ReportThread {
@@ -18,8 +21,17 @@ export interface ReportThread {
   authorId: string;
   authorName: string;
   rootPostId: string;
+  group?: string;
+  recipient?: string;
 }
 
 export type ReportPostWithChildren = ReportPost & {
   children: ReportPostWithChildren[];
 };
+
+// グループ設定用
+export interface GroupConfig {
+  id: string;
+  name: string;
+  createdAt: Date;
+}

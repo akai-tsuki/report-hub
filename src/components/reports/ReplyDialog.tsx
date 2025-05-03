@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,9 +8,15 @@ import {
   Button,
   Box,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
 } from "@mui/material";
-import { createPost } from "../../services/reports";
+import { createPost, getGroups } from "../../services/reports";
 import { useAuth } from "../../context/AuthContext";
+import { GroupConfig } from "../../types";
 
 interface ReplyDialogProps {
   open: boolean;
@@ -29,19 +35,64 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
 }) => {
   const { currentUser } = useAuth();
   const [content, setContent] = useState("");
+  const [authorName, setAuthorName] = useState("");
+  const [group, setGroup] = useState("");
+  const [recipient, setRecipient] = useState("");
+  const [title, setTitle] = useState("");
+  const [groups, setGroups] = useState<GroupConfig[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [contentError, setContentError] = useState("");
+  const [authorNameError, setAuthorNameError] = useState("");
+
+  useEffect(() => {
+    if (currentUser) {
+      setAuthorName(currentUser.displayName || "Anonymous User");
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      if (open) {
+        setIsLoading(true);
+        try {
+          const fetchedGroups = await getGroups();
+          setGroups(fetchedGroups);
+        } catch (error) {
+          console.error("Error fetching groups:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchGroups();
+  }, [open]);
+
+  const handleGroupChange = (event: SelectChangeEvent) => {
+    setGroup(event.target.value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate
+    let isValid = true;
     if (!content.trim()) {
       setContentError("Reply content is required");
-      return;
+      isValid = false;
     } else {
       setContentError("");
     }
+
+    if (!authorName.trim()) {
+      setAuthorNameError("Name is required");
+      isValid = false;
+    } else {
+      setAuthorNameError("");
+    }
+
+    if (!isValid) return;
 
     if (!currentUser) {
       console.error("User not authenticated");
@@ -61,6 +112,10 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
         threadId,
         currentUser.uid,
         currentUser.displayName || "Anonymous User",
+        group || undefined,
+        recipient || undefined,
+        authorName !== (currentUser.displayName || "Anonymous User") ? authorName : undefined,
+        title || undefined,
         currentUser.photoURL || undefined
       );
       
@@ -68,6 +123,12 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       
       // Reset form
       setContent("");
+      setTitle("");
+      setRecipient("");
+      setGroup("");
+      if (currentUser) {
+        setAuthorName(currentUser.displayName || "Anonymous User");
+      }
     } catch (error) {
       console.error("Error creating reply:", error);
     } finally {
@@ -79,6 +140,13 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
     if (!isSubmitting) {
       setContent("");
       setContentError("");
+      setAuthorNameError("");
+      setTitle("");
+      setRecipient("");
+      setGroup("");
+      if (currentUser) {
+        setAuthorName(currentUser.displayName || "Anonymous User");
+      }
       onClose();
     }
   };
@@ -88,6 +156,55 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       <DialogTitle>Reply</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent>
+          <TextField
+            margin="dense"
+            label="Your Name"
+            fullWidth
+            value={authorName}
+            onChange={(e) => setAuthorName(e.target.value)}
+            disabled={isSubmitting}
+            error={!!authorNameError}
+            helperText={authorNameError}
+            sx={{ mb: 2 }}
+          />
+          
+          <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
+            <InputLabel id="reply-group-select-label">Group</InputLabel>
+            <Select
+              labelId="reply-group-select-label"
+              id="reply-group-select"
+              value={group}
+              label="Group"
+              onChange={handleGroupChange}
+              disabled={isSubmitting || isLoading}
+            >
+              <MenuItem value=""><em>None</em></MenuItem>
+              {groups.map((group) => (
+                <MenuItem key={group.id} value={group.id}>{group.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <TextField
+            margin="dense"
+            label="Recipient"
+            fullWidth
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            disabled={isSubmitting}
+            sx={{ mb: 2 }}
+          />
+          
+          <TextField
+            margin="dense"
+            label="Title"
+            fullWidth
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            disabled={isSubmitting}
+            sx={{ mb: 2 }}
+          />
+          
           <TextField
             autoFocus
             margin="dense"

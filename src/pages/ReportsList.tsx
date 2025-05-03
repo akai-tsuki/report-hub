@@ -114,9 +114,19 @@ const ReportsList: React.FC = () => {
 
       <Container maxWidth="md" sx={{ mt: 4, mb: 4, flexGrow: 1 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h4" component="h1">
-            Reports
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h4" component="h1">
+              Reports
+            </Typography>
+            <Button 
+              variant="outlined"
+              size="small"
+              onClick={() => navigate('/settings/groups')}
+              sx={{ ml: 2 }}
+            >
+              Group Settings
+            </Button>
+          </Box>
           <Box>
             <Button
               variant="contained"

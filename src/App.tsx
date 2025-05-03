@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Login from "./pages/Login";
 import ReportsList from "./pages/ReportsList";
 import ReportContent from "./pages/ReportContent";
+import GroupSettings from "./pages/GroupSettings";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import "./App.css";
 
@@ -48,6 +49,7 @@ function App() {
             <Route element={<PrivateRoute />}>
               <Route path="/reports" element={<ReportsList />} />
               <Route path="/reports/:threadId" element={<ReportContent />} />
+              <Route path="/settings/groups" element={<GroupSettings />} />
             </Route>
             <Route path="/" element={<Navigate to="/reports" replace />} />
           </Routes>

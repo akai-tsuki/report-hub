@@ -3,6 +3,7 @@ import {
   doc, 
   addDoc, 
   updateDoc, 
+  deleteDoc,
   getDoc, 
   getDocs, 
   query, 
@@ -16,24 +17,38 @@ import {
   Timestamp
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { ReportPost, ReportThread, ReportPostWithChildren } from "../types";
+import { ReportPost, ReportThread, ReportPostWithChildren, GroupConfig } from "../types";
 
 const POSTS_PER_PAGE = 20;
 
 // Create a new thread
-export const createThread = async (title: string, content: string, userId: string, userName: string, userPhotoURL?: string): Promise<string> => {
+export const createThread = async (
+  title: string, 
+  content: string, 
+  userId: string, 
+  userName: string, 
+  group?: string,
+  recipient?: string,
+  customName?: string,
+  userPhotoURL?: string
+): Promise<string> => {
   try {
+    const actualName = customName || userName;
+
     // Create the root post first
     const postRef = await addDoc(collection(db, "posts"), {
       content,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       authorId: userId,
-      authorName: userName,
+      authorName: actualName,
       authorPhotoURL: userPhotoURL || null,
       parentId: null,
       threadId: "temp", // Will update after thread creation
-      childrenIds: []
+      childrenIds: [],
+      group: group || null,
+      recipient: recipient || null,
+      title: title
     });
 
     // Now create the thread with reference to root post
@@ -41,8 +56,10 @@ export const createThread = async (title: string, content: string, userId: strin
       title,
       createdAt: serverTimestamp(),
       authorId: userId,
-      authorName: userName,
-      rootPostId: postRef.id
+      authorName: actualName,
+      rootPostId: postRef.id,
+      group: group || null,
+      recipient: recipient || null
     });
 
     // Update the post with the correct threadId
@@ -64,20 +81,29 @@ export const createPost = async (
   threadId: string,
   userId: string,
   userName: string,
+  group?: string,
+  recipient?: string,
+  customName?: string,
+  title?: string,
   userPhotoURL?: string
 ): Promise<string> => {
   try {
+    const actualName = customName || userName;
+    
     // Create the new post
     const postRef = await addDoc(collection(db, "posts"), {
       content,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       authorId: userId,
-      authorName: userName,
+      authorName: actualName,
       authorPhotoURL: userPhotoURL || null,
       parentId,
       threadId,
-      childrenIds: []
+      childrenIds: [],
+      group: group || null,
+      recipient: recipient || null,
+      title: title || null
     });
 
     // Update parent post's childrenIds array
@@ -134,6 +160,8 @@ export const getThreads = async (lastVisible?: QueryDocumentSnapshot<DocumentDat
         authorId: data.authorId,
         authorName: data.authorName,
         rootPostId: data.rootPostId,
+        group: data.group || null,
+        recipient: data.recipient || null
       });
     });
 
@@ -165,6 +193,8 @@ export const getThreadById = async (threadId: string): Promise<ReportThread | nu
       authorId: data.authorId,
       authorName: data.authorName,
       rootPostId: data.rootPostId,
+      group: data.group || null,
+      recipient: data.recipient || null
     };
   } catch (error) {
     console.error("Error getting thread:", error);
@@ -203,6 +233,9 @@ export const getPostsByThreadId = async (threadId: string): Promise<ReportPostWi
         parentId: data.parentId,
         threadId: data.threadId,
         childrenIds: data.childrenIds || [],
+        group: data.group || null,
+        recipient: data.recipient || null,
+        title: data.title || null,
         children: []
       });
     });
@@ -227,6 +260,72 @@ export const getPostsByThreadId = async (threadId: string): Promise<ReportPostWi
     return rootPost;
   } catch (error) {
     console.error("Error getting posts:", error);
+    throw error;
+  }
+};
+
+// グループ関連の関数
+
+// グループを作成
+export const createGroup = async (name: string): Promise<string> => {
+  try {
+    const groupRef = await addDoc(collection(db, "groups"), {
+      name,
+      createdAt: serverTimestamp()
+    });
+    
+    return groupRef.id;
+  } catch (error) {
+    console.error("Error creating group:", error);
+    throw error;
+  }
+};
+
+// グループ一覧を取得
+export const getGroups = async (): Promise<GroupConfig[]> => {
+  try {
+    const groupsQuery = query(
+      collection(db, "groups"),
+      orderBy("name", "asc")
+    );
+    
+    const snapshot = await getDocs(groupsQuery);
+    const groups: GroupConfig[] = [];
+    
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      groups.push({
+        id: doc.id,
+        name: data.name,
+        createdAt: (data.createdAt as Timestamp).toDate()
+      });
+    });
+    
+    return groups;
+  } catch (error) {
+    console.error("Error getting groups:", error);
+    throw error;
+  }
+};
+
+// グループを更新
+export const updateGroup = async (groupId: string, name: string): Promise<void> => {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    await updateDoc(groupRef, { name });
+  } catch (error) {
+    console.error("Error updating group:", error);
+    throw error;
+  }
+};
+
+// グループを削除
+export const deleteGroup = async (groupId: string): Promise<void> => {
+  try {
+    const groupRef = doc(db, "groups", groupId);
+    await deleteDoc(groupRef);
+  } catch (error) {
+    console.error("Error deleting group:", error);
     throw error;
   }
 };
