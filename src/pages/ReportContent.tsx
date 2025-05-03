@@ -9,6 +9,7 @@ import {
   Paper,
   Breadcrumbs,
   Link,
+  Divider,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReplyIcon from "@mui/icons-material/Reply";
@@ -18,6 +19,7 @@ import { useAuth } from "../context/AuthContext";
 import PostTree from "../components/reports/PostTree";
 import ReplyDialog from "../components/reports/ReplyDialog";
 import Header from "../components/layout/Header";
+import { formatPostTitle, formatPostAuthorInfo } from "../utils/formatUtils";
 
 const ReportContent: React.FC = () => {
   const { threadId } = useParams<{ threadId: string }>();
@@ -133,17 +135,20 @@ const ReportContent: React.FC = () => {
         </Box>
 
         <Paper elevation={2} sx={{ p: 3, mb: 3 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-            <Typography variant="h6">
-              Thread by {postTree.authorName}
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              {postTree.createdAt.toLocaleDateString()} at{" "}
-              {postTree.createdAt.toLocaleTimeString()}
-            </Typography>
-          </Box>
-
-          <Typography variant="body1" paragraph>
+          {/* タイトル部分 */}
+          <Typography variant="h5" component="h2" gutterBottom>
+            {formatPostTitle(postTree)}
+          </Typography>
+          
+          {/* 投稿者情報部分 */}
+          <Typography variant="subtitle1" color="textSecondary" sx={{ mb: 2 }}>
+            {formatPostAuthorInfo(postTree)}
+          </Typography>
+          
+          <Divider sx={{ mb: 2 }} />
+          
+          {/* 内容部分 */}
+          <Typography variant="body1" paragraph sx={{ whiteSpace: "pre-wrap" }}>
             {postTree.content}
           </Typography>
 

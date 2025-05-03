@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Paper, Typography, Button, Divider } from "@mui/material";
 import ReplyIcon from "@mui/icons-material/Reply";
 import { ReportPostWithChildren } from "../../types";
+import { formatPostTitle, formatPostAuthorInfo } from "../../utils/formatUtils";
 
 interface PostTreeProps {
   posts: ReportPostWithChildren[];
@@ -45,23 +46,20 @@ const PostTree: React.FC<PostTreeProps> = ({ posts, level, onReplyClick }) => {
               }`,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                mb: 1,
-              }}
-            >
-              <Typography variant="subtitle1" fontWeight="bold">
-                {post.authorName}
+            {/* タイトルがある場合は表示 */}
+            {post.title && (
+              <Typography variant="h6" component="h3" gutterBottom>
+                {formatPostTitle(post)}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                {post.createdAt.toLocaleDateString()} at{" "}
-                {post.createdAt.toLocaleTimeString()}
-              </Typography>
-            </Box>
+            )}
+            
+            {/* 投稿者情報 */}
+            <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 1 }}>
+              {formatPostAuthorInfo(post)}
+            </Typography>
             <Divider sx={{ mb: 1 }} />
+            
+            {/* 内容 */}
             <Typography variant="body1" sx={{ mb: 2, whiteSpace: "pre-wrap" }}>
               {post.content}
             </Typography>

@@ -1,0 +1,12 @@
+{
+  "post": {
+    "title": "{{ title }}",
+    "titleWithRecipient": "{{ title }} （To: {{ recipient }}）",
+    "authorInfo": "{{ authorName }}＠{{ group }} ( {{ createdAt }} )",
+    "authorInfoWithoutGroup": "{{ authorName }} ( {{ createdAt }} )",
+    "content": "{{ content }}"
+  },
+  "date": {
+    "format": "yyyy/MM/dd HH:mm"
+  }
+}
