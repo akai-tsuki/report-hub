@@ -34,6 +34,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
   const [content, setContent] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [group, setGroup] = useState("");
+  const [groupName, setGroupName] = useState("");
   const [recipient, setRecipient] = useState("");
   const [groups, setGroups] = useState<GroupConfig[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +68,16 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
   }, [open]);
 
   const handleGroupChange = (event: SelectChangeEvent) => {
-    setGroup(event.target.value);
+    const selectedGroupId = event.target.value;
+    setGroup(selectedGroupId);
+    
+    // グループIDから名前を設定
+    if (selectedGroupId) {
+      const selectedGroup = groups.find(g => g.id === selectedGroupId);
+      setGroupName(selectedGroup ? selectedGroup.name : '');
+    } else {
+      setGroupName('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,7 +120,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
         content,
         currentUser.uid,
         currentUser.displayName || "Anonymous User",
-        group || undefined,
+        groupName || undefined,
         recipient || undefined,
         authorName !== (currentUser.displayName || "Anonymous User") ? authorName : undefined,
         currentUser.photoURL || undefined
@@ -122,6 +132,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
       setContent("");
       setAuthorName(currentUser.displayName || "Anonymous User");
       setGroup("");
+      setGroupName("");
       setRecipient("");
     } catch (error) {
       console.error("Error creating thread:", error);

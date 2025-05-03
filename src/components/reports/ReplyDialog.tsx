@@ -37,6 +37,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
   const [content, setContent] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [group, setGroup] = useState("");
+  const [groupName, setGroupName] = useState("");
   const [recipient, setRecipient] = useState("");
   const [title, setTitle] = useState("");
   const [groups, setGroups] = useState<GroupConfig[]>([]);
@@ -70,7 +71,16 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
   }, [open]);
 
   const handleGroupChange = (event: SelectChangeEvent) => {
-    setGroup(event.target.value);
+    const selectedGroupId = event.target.value;
+    setGroup(selectedGroupId);
+    
+    // グループIDから名前を設定
+    if (selectedGroupId) {
+      const selectedGroup = groups.find(g => g.id === selectedGroupId);
+      setGroupName(selectedGroup ? selectedGroup.name : '');
+    } else {
+      setGroupName('');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,7 +122,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
         threadId,
         currentUser.uid,
         currentUser.displayName || "Anonymous User",
-        group || undefined,
+        groupName || undefined,
         recipient || undefined,
         authorName !== (currentUser.displayName || "Anonymous User") ? authorName : undefined,
         title || undefined,
@@ -126,6 +136,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       setTitle("");
       setRecipient("");
       setGroup("");
+      setGroupName("");
       if (currentUser) {
         setAuthorName(currentUser.displayName || "Anonymous User");
       }
@@ -144,6 +155,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       setTitle("");
       setRecipient("");
       setGroup("");
+      setGroupName("");
       if (currentUser) {
         setAuthorName(currentUser.displayName || "Anonymous User");
       }
