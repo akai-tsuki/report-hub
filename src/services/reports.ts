@@ -240,6 +240,7 @@ export const getPostsByThreadId = async (threadId: string): Promise<ReportPostWi
         group: data.group || null,
         recipient: data.recipient || null,
         title: data.title || null,
+        priority: data.priority || null,
         children: []
       });
     });
