@@ -6,6 +6,16 @@
     "authorInfoWithoutGroup": "{{ authorName }} ( {{ createdAt }} )",
     "content": "{{ content }}"
   },
+  "thread": {
+    "listFormat": "【{{ authorName }}＠{{ group }}】{{ title }}  {{ createdAt }}"
+  },
+  "hierarchyTree": {
+    "threadPrefix": "■",
+    "postPrefix": "　┣",
+    "postLastPrefix": "　┗",
+    "postContinuePrefix": "　┃",
+    "postIndent": "　"
+  },
   "date": {
     "format": "yyyy/MM/dd HH:mm"
   }

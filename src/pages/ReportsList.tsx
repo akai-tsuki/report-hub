@@ -12,10 +12,11 @@ import {
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import { getThreads } from "../services/reports";
-import { ReportThread } from "../types";
+import { getThreads, getThreadsWithRootPosts } from "../services/reports";
+import { ReportThread, ReportPostWithChildren } from "../types";
 import { useAuth } from "../context/AuthContext";
 import ThreadListItem from "../components/reports/ThreadListItem";
+import ThreadPostsTree from "../components/reports/ThreadPostsTree";
 import NewThreadDialog from "../components/reports/NewThreadDialog";
 import NewPostDialog from "../components/reports/NewPostDialog";
 import Header from "../components/layout/Header";
@@ -25,6 +26,8 @@ const ReportsList: React.FC = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [threads, setThreads] = useState<ReportThread[]>([]);
+  const [threadsWithPosts, setThreadsWithPosts] = useState<{thread: ReportThread, rootPost: ReportPostWithChildren}[]>([]);
+  const [viewMode, setViewMode] = useState<'simple' | 'tree'>('tree');
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
@@ -35,7 +38,7 @@ const ReportsList: React.FC = () => {
     if (!currentUser) {
       navigate("/login");
     } else {
-      loadThreads();
+      loadThreadsAndPosts();
     }
   }, [currentUser, navigate]);
 
@@ -58,6 +61,28 @@ const ReportsList: React.FC = () => {
       setLoading(false);
     }
   };
+  
+  const loadThreadsAndPosts = async () => {
+    try {
+      setLoading(true);
+      
+      // サイズは必要に応じて調整
+      const limit = 20;
+      const result = await getThreadsWithRootPosts(limit);
+      
+      setThreadsWithPosts(result);
+      
+      // シンプルビュー用のスレッドリストも更新
+      const simpleThreads = result.map(item => item.thread);
+      setThreads(simpleThreads);
+      
+      setHasMore(false); // ページネーションは後で追加
+    } catch (error) {
+      console.error("Error loading threads with posts", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadMoreThreads = () => {
     if (!loading && hasMore) {
@@ -76,12 +101,42 @@ const ReportsList: React.FC = () => {
 
   const handleThreadCreated = () => {
     setNewThreadDialogOpen(false);
-    loadThreads();
+    loadThreadsAndPosts();
   };
 
   const handlePostCreated = () => {
     setNewPostDialogOpen(false);
-    loadThreads();
+    loadThreadsAndPosts();
+  };
+  
+  const handlePostClick = (postId: string) => {
+    // 対応するスレッドIDを特定して、詳細ページに遷移
+    for (const item of threadsWithPosts) {
+      // ルート投稿の場合
+      if (item.rootPost.id === postId) {
+        navigate(`/reports/${item.thread.id}`);
+        return;
+      }
+      
+      // 子投稿の場合（再帰的に探索）
+      const findPostInChildren = (children: ReportPostWithChildren[]): boolean => {
+        for (const child of children) {
+          if (child.id === postId) {
+            navigate(`/reports/${item.thread.id}`);
+            return true;
+          }
+          
+          if (child.children.length > 0 && findPostInChildren(child.children)) {
+            return true;
+          }
+        }
+        return false;
+      };
+      
+      if (item.rootPost.children.length > 0 && findPostInChildren(item.rootPost.children)) {
+        break;
+      }
+    }
   };
 
   const handleThreadClick = (threadId: string) => {
@@ -128,29 +183,67 @@ const ReportsList: React.FC = () => {
           </Box>
         </Box>
 
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            size="small"
+            variant={viewMode === 'simple' ? 'contained' : 'outlined'}
+            onClick={() => setViewMode('simple')}
+            sx={{ mr: 1 }}
+          >
+            Simple View
+          </Button>
+          <Button
+            size="small" 
+            variant={viewMode === 'tree' ? 'contained' : 'outlined'}
+            onClick={() => setViewMode('tree')}
+          >
+            Tree View
+          </Button>
+        </Box>
+        
         <Paper elevation={2} sx={{ p: 2 }}>
-          {loading && threads.length === 0 ? (
+          {loading ? (
             <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
               <CircularProgress />
             </Box>
-          ) : threads.length === 0 ? (
+          ) : viewMode === 'simple' && threads.length === 0 ? (
+            <Typography variant="body1" sx={{ p: 2, textAlign: "center" }}>
+              No reports found. Create a new thread to get started.
+            </Typography>
+          ) : viewMode === 'tree' && threadsWithPosts.length === 0 ? (
             <Typography variant="body1" sx={{ p: 2, textAlign: "center" }}>
               No reports found. Create a new thread to get started.
             </Typography>
           ) : (
             <>
-              <List>
-                {threads.map((thread, index) => (
-                  <React.Fragment key={thread.id}>
-                    <ThreadListItem
-                      thread={thread}
-                      onClick={() => handleThreadClick(thread.id)}
-                    />
-                    {index < threads.length - 1 && <Divider component="li" />}
-                  </React.Fragment>
-                ))}
-              </List>
-              {hasMore && (
+              {viewMode === 'simple' ? (
+                <List>
+                  {threads.map((thread, index) => (
+                    <React.Fragment key={thread.id}>
+                      <ThreadListItem
+                        thread={thread}
+                        onClick={() => handleThreadClick(thread.id)}
+                      />
+                      {index < threads.length - 1 && <Divider component="li" />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              ) : (
+                <Box>
+                  {threadsWithPosts.map((item, index) => (
+                    <React.Fragment key={item.thread.id}>
+                      <ThreadPostsTree
+                        thread={item.thread}
+                        rootPost={item.rootPost}
+                        onPostClick={handlePostClick}
+                      />
+                      {index < threadsWithPosts.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </Box>
+              )}
+              
+              {hasMore && viewMode === 'simple' && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
                   <Button
                     variant="outlined"

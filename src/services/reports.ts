@@ -329,3 +329,76 @@ export const deleteGroup = async (groupId: string): Promise<void> => {
     throw error;
   }
 };
+
+// スレッドと、そのスレッドに属するすべての投稿を取得する
+export const getThreadWithPosts = async (threadId: string): Promise<{thread: ReportThread, rootPost: ReportPostWithChildren} | null> => {
+  try {
+    const [thread, rootPost] = await Promise.all([
+      getThreadById(threadId),
+      getPostsByThreadId(threadId),
+    ]);
+
+    if (!thread || !rootPost) {
+      return null;
+    }
+
+    return { thread, rootPost };
+  } catch (error) {
+    console.error("Error getting thread with posts:", error);
+    throw error;
+  }
+};
+
+// すべてのスレッドと、それぞれのルート投稿を取得する
+export const getThreadsWithRootPosts = async (limit = 10): Promise<{thread: ReportThread, rootPost: ReportPostWithChildren}[]> => {
+  try {
+    // まずスレッドを取得
+    const threadsQuery = query(
+      collection(db, "threads"),
+      orderBy("createdAt", "desc"),
+      limit(limit)
+    );
+    
+    const threadsSnapshot = await getDocs(threadsQuery);
+    
+    if (threadsSnapshot.empty) {
+      return [];
+    }
+    
+    // 各スレッドに対応するルート投稿を取得
+    const threadDataPromises = threadsSnapshot.docs.map(async (threadDoc) => {
+      const threadData = threadDoc.data();
+      const thread: ReportThread = {
+        id: threadDoc.id,
+        title: threadData.title,
+        createdAt: (threadData.createdAt as Timestamp).toDate(),
+        authorId: threadData.authorId,
+        authorName: threadData.authorName,
+        rootPostId: threadData.rootPostId,
+        group: threadData.group || null,
+        recipient: threadData.recipient || null
+      };
+      
+      const rootPostId = threadData.rootPostId;
+      
+      // ルート投稿と返信を取得
+      const rootPost = await getPostsByThreadId(threadDoc.id);
+      
+      if (!rootPost) {
+        return null;
+      }
+      
+      return { thread, rootPost };
+    });
+    
+    const threadDataResults = await Promise.all(threadDataPromises);
+    
+    // nullの結果をフィルタリング
+    return threadDataResults.filter((result): result is {thread: ReportThread, rootPost: ReportPostWithChildren} => 
+      result !== null
+    );
+  } catch (error) {
+    console.error("Error getting threads with root posts:", error);
+    throw error;
+  }
+};

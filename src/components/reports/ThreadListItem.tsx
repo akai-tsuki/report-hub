@@ -1,6 +1,7 @@
 import React from "react";
 import { ListItem, ListItemText, Typography, Box } from "@mui/material";
 import { ReportThread } from "../../types";
+import { formatThreadListItem } from "../../utils/formatUtils";
 
 interface ThreadListItemProps {
   thread: ReportThread;
@@ -10,30 +11,31 @@ interface ThreadListItemProps {
 const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread, onClick }) => {
   return (
     <ListItem
-      alignItems="flex-start"
+      alignItems="center"
       onClick={onClick}
       sx={{
         "&:hover": {
           backgroundColor: "rgba(0, 0, 0, 0.04)",
         },
         borderRadius: 1,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        p: 1
       }}
     >
       <ListItemText
         primary={
-          <Typography variant="h6" component="div">
-            {thread.title}
+          <Typography 
+            variant="body1" 
+            component="div" 
+            sx={{ 
+              fontWeight: 'medium',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+          >
+            {formatThreadListItem(thread)}
           </Typography>
-        }
-        secondary={
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="body2" color="textSecondary" component="span">
-              Created by {thread.authorName} on{" "}
-              {thread.createdAt.toLocaleDateString()} at{" "}
-              {thread.createdAt.toLocaleTimeString()}
-            </Typography>
-          </Box>
         }
       />
     </ListItem>

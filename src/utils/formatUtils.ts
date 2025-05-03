@@ -1,6 +1,6 @@
 import formatConfig from '../config/format.json';
 import { format } from 'date-fns';
-import { ReportPost, ReportPostWithChildren } from '../types';
+import { ReportPost, ReportPostWithChildren, ReportThread } from '../types';
 
 /**
  * 日付を指定されたフォーマットで整形する
@@ -29,6 +29,28 @@ export const formatPostTitle = (post: ReportPost | ReportPostWithChildren): stri
   return template
     .replace('{{ title }}', post.title || '')
     .replace('{{ recipient }}', post.recipient || '');
+};
+
+/**
+ * スレッドの一覧表示用文字列を整形する
+ * @param thread スレッドデータ
+ * @returns フォーマットされた表示文字列
+ */
+export const formatThreadListItem = (thread: ReportThread): string => {
+  const template = formatConfig.thread.listFormat;
+  const dateStr = formatDate(thread.createdAt);
+  
+  // グループが存在しない場合は、@記号を省略
+  let authorWithGroup = thread.authorName;
+  if (thread.group) {
+    authorWithGroup = `${thread.authorName}＠${thread.group}`;
+  }
+  
+  return template
+    .replace('{{ authorName }}', thread.authorName)
+    .replace('{{ group }}', thread.group || '')
+    .replace('{{ title }}', thread.title)
+    .replace('{{ createdAt }}', dateStr);
 };
 
 /**
