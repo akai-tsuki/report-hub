@@ -1,6 +1,6 @@
 import formatConfig from '../config/format.json';
 import { format } from 'date-fns';
-import { ReportPost, ReportPostWithChildren, ReportThread } from '../types';
+import { ReportPost, ReportPostWithChildren, ReportThread, PriorityLevel } from '../types';
 
 /**
  * 日付を指定されたフォーマットで整形する
@@ -25,8 +25,12 @@ export const formatPostTitle = (post: ReportPost | ReportPostWithChildren): stri
   // タイトルが無い場合、空文字を返す
   if (!post.title) return '';
   
+  // 優先度の文字列を取得
+  const priorityText = formatPriority(post.priority as PriorityLevel);
+  const prefix = priorityText ? `【${priorityText}】` : '';
+  
   // テンプレートの変数を実際の値に置換
-  return template
+  return prefix + template
     .replace('{{ title }}', post.title || '')
     .replace('{{ recipient }}', post.recipient || '');
 };
@@ -90,6 +94,44 @@ export const parseTemplate = (template: string, values: Record<string, string | 
   });
   
   return result;
+};
+
+/**
+ * 優先度を表示用にフォーマットする
+ * @param priority 優先度
+ * @returns フォーマットされた優先度文字列
+ */
+export const formatPriority = (priority?: PriorityLevel): string => {
+  if (!priority || priority === 'none') {
+    return '';
+  }
+  
+  // format.jsonから該当する優先度の表示文字列を取得
+  if (formatConfig.priority && formatConfig.priority[priority]) {
+    return formatConfig.priority[priority];
+  }
+  
+  return '';
+};
+
+/**
+ * 優先度のリストを取得する
+ * @returns 優先度のリスト（キーと表示名のペア）
+ */
+export const getPriorityOptions = (): { value: PriorityLevel, label: string }[] => {
+  const priorityConfig = formatConfig.priority;
+  const options: { value: PriorityLevel, label: string }[] = [];
+  
+  // priorityConfigのキーをPriorityLevel型にキャストして使用
+  Object.keys(priorityConfig).forEach(key => {
+    const priorityKey = key as PriorityLevel;
+    options.push({
+      value: priorityKey,
+      label: priorityConfig[priorityKey] || key
+    });
+  });
+  
+  return options;
 };
 
 /**

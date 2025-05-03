@@ -30,7 +30,8 @@ export const createThread = async (
   group?: string,
   recipient?: string,
   customName?: string,
-  userPhotoURL?: string
+  userPhotoURL?: string,
+  priority?: string
 ): Promise<string> => {
   try {
     const actualName = customName || userName;
@@ -48,7 +49,8 @@ export const createThread = async (
       childrenIds: [],
       group: group || null,
       recipient: recipient || null,
-      title: title
+      title: title,
+      priority: priority || 'none'
     });
 
     // Now create the thread with reference to root post
@@ -85,7 +87,8 @@ export const createPost = async (
   recipient?: string,
   customName?: string,
   title?: string,
-  userPhotoURL?: string
+  userPhotoURL?: string,
+  priority?: string
 ): Promise<string> => {
   try {
     const actualName = customName || userName;
@@ -103,7 +106,8 @@ export const createPost = async (
       childrenIds: [],
       group: group || null,
       recipient: recipient || null,
-      title: title || null
+      title: title || null,
+      priority: priority || 'none'
     });
 
     // Update parent post's childrenIds array

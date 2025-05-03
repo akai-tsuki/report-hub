@@ -17,6 +17,7 @@ import {
 import { createThread, getGroups } from "../../services/reports";
 import { useAuth } from "../../context/AuthContext";
 import { GroupConfig } from "../../types";
+import { getPriorityOptions } from "../../utils/formatUtils";
 
 interface NewThreadDialogProps {
   open: boolean;
@@ -36,6 +37,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
   const [group, setGroup] = useState("");
   const [groupName, setGroupName] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [priority, setPriority] = useState<string>("medium");
   const [groups, setGroups] = useState<GroupConfig[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,7 +125,8 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
         groupName || undefined,
         recipient || undefined,
         authorName !== (currentUser.displayName || "Anonymous User") ? authorName : undefined,
-        currentUser.photoURL || undefined
+        currentUser.photoURL || undefined,
+        priority
       );
       onThreadCreated();
       
@@ -149,7 +152,9 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
       setContentError("");
       setAuthorNameError("");
       setGroup("");
+      setGroupName("");
       setRecipient("");
+      setPriority("medium");
       if (currentUser) {
         setAuthorName(currentUser.displayName || "Anonymous User");
       }
@@ -162,7 +167,9 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
       <DialogTitle>Create New Thread</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent>
+          {/* 1. 名前 */}
           <TextField
+            autoFocus
             margin="dense"
             label="Your Name"
             fullWidth
@@ -174,6 +181,7 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
             sx={{ mb: 2 }}
           />
           
+          {/* 2. グループ */}
           <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
             <InputLabel id="group-select-label">Group</InputLabel>
             <Select
@@ -191,18 +199,8 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
             </Select>
           </FormControl>
 
+          {/* 3. タイトル */}
           <TextField
-            margin="dense"
-            label="Recipient"
-            fullWidth
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            disabled={isSubmitting}
-            sx={{ mb: 2 }}
-          />
-          
-          <TextField
-            autoFocus
             margin="dense"
             label="Thread Title"
             fullWidth
@@ -214,6 +212,37 @@ const NewThreadDialog: React.FC<NewThreadDialogProps> = ({
             sx={{ mb: 2 }}
           />
           
+          {/* 4. 宛先 */}
+          <TextField
+            margin="dense"
+            label="Recipient"
+            fullWidth
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            disabled={isSubmitting}
+            sx={{ mb: 2 }}
+          />
+          
+          {/* 5. 重要度 */}
+          <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
+            <InputLabel id="priority-select-label">Priority</InputLabel>
+            <Select
+              labelId="priority-select-label"
+              id="priority-select"
+              value={priority}
+              label="Priority"
+              onChange={(e) => setPriority(e.target.value)}
+              disabled={isSubmitting}
+            >
+              {getPriorityOptions().map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.value === 'none' ? <em>{option.label}</em> : option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          {/* 6. 内容 */}
           <TextField
             margin="dense"
             label="Content"

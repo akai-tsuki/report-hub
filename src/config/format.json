@@ -16,6 +16,14 @@
     "postContinuePrefix": "　┃",
     "postIndent": "　"
   },
+  "priority": {
+    "critical": "重要",
+    "high": "高",
+    "medium": "中",
+    "low": "低",
+    "report": "要報告",
+    "none": ""
+  },
   "date": {
     "format": "yyyy/MM/dd HH:mm"
   }

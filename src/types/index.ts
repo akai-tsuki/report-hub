@@ -1,3 +1,5 @@
+export type PriorityLevel = 'critical' | 'high' | 'medium' | 'low' | 'report' | 'none';
+
 export interface ReportPost {
   id: string;
   content: string;
@@ -12,6 +14,7 @@ export interface ReportPost {
   group?: string;
   recipient?: string;
   title?: string;
+  priority?: PriorityLevel;
 }
 
 export interface ReportThread {

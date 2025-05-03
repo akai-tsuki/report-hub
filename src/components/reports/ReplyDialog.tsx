@@ -17,6 +17,7 @@ import {
 import { createPost, getGroups } from "../../services/reports";
 import { useAuth } from "../../context/AuthContext";
 import { GroupConfig } from "../../types";
+import { getPriorityOptions } from "../../utils/formatUtils";
 
 interface ReplyDialogProps {
   open: boolean;
@@ -40,6 +41,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
   const [groupName, setGroupName] = useState("");
   const [recipient, setRecipient] = useState("");
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<string>("medium");
   const [groups, setGroups] = useState<GroupConfig[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -126,7 +128,8 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
         recipient || undefined,
         authorName !== (currentUser.displayName || "Anonymous User") ? authorName : undefined,
         title || undefined,
-        currentUser.photoURL || undefined
+        currentUser.photoURL || undefined,
+        priority
       );
       
       onReplySubmitted();
@@ -156,6 +159,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       setRecipient("");
       setGroup("");
       setGroupName("");
+      setPriority("medium");
       if (currentUser) {
         setAuthorName(currentUser.displayName || "Anonymous User");
       }
@@ -168,7 +172,9 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
       <DialogTitle>Reply</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent>
+          {/* 1. 名前 */}
           <TextField
+            autoFocus
             margin="dense"
             label="Your Name"
             fullWidth
@@ -180,6 +186,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
             sx={{ mb: 2 }}
           />
           
+          {/* 2. グループ */}
           <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
             <InputLabel id="reply-group-select-label">Group</InputLabel>
             <Select
@@ -197,16 +204,7 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
             </Select>
           </FormControl>
 
-          <TextField
-            margin="dense"
-            label="Recipient"
-            fullWidth
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            disabled={isSubmitting}
-            sx={{ mb: 2 }}
-          />
-          
+          {/* 3. タイトル */}
           <TextField
             margin="dense"
             label="Title"
@@ -217,8 +215,38 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
             sx={{ mb: 2 }}
           />
           
+          {/* 4. 宛先 */}
           <TextField
-            autoFocus
+            margin="dense"
+            label="Recipient"
+            fullWidth
+            value={recipient}
+            onChange={(e) => setRecipient(e.target.value)}
+            disabled={isSubmitting}
+            sx={{ mb: 2 }}
+          />
+          
+          {/* 5. 重要度 */}
+          <FormControl fullWidth margin="dense" sx={{ mb: 2 }}>
+            <InputLabel id="reply-priority-select-label">Priority</InputLabel>
+            <Select
+              labelId="reply-priority-select-label"
+              id="reply-priority-select"
+              value={priority}
+              label="Priority"
+              onChange={(e) => setPriority(e.target.value)}
+              disabled={isSubmitting}
+            >
+              {getPriorityOptions().map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.value === 'none' ? <em>{option.label}</em> : option.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          
+          {/* 6. 内容 */}
+          <TextField
             margin="dense"
             label="Your Reply"
             fullWidth
