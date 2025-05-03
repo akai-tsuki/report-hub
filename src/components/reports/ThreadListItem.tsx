@@ -11,13 +11,13 @@ const ThreadListItem: React.FC<ThreadListItemProps> = ({ thread, onClick }) => {
   return (
     <ListItem
       alignItems="flex-start"
-      button
       onClick={onClick}
       sx={{
         "&:hover": {
           backgroundColor: "rgba(0, 0, 0, 0.04)",
         },
         borderRadius: 1,
+        cursor: 'pointer'
       }}
     >
       <ListItemText

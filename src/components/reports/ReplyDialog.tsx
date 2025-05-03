@@ -16,7 +16,7 @@ interface ReplyDialogProps {
   open: boolean;
   onClose: () => void;
   parentId: string;
-  threadId: string;
+  threadId: string | undefined;
   onReplySubmitted: () => void;
 }
 
@@ -50,6 +50,11 @@ const ReplyDialog: React.FC<ReplyDialogProps> = ({
 
     try {
       setIsSubmitting(true);
+      if (!threadId) {
+        console.error("Thread ID is undefined");
+        return;
+      }
+      
       await createPost(
         content,
         parentId,
