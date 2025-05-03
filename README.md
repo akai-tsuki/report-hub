@@ -7,8 +7,13 @@ A React-based reporting system with threaded discussions, using Firebase for aut
 - Google Authentication for user login
 - Report listing with tree-based threaded discussions
 - Pagination for efficient handling of large report lists
-- Create new threads and posts
-- Reply to existing posts
+- Create new threads and posts with customizable fields:
+  - Author name (defaults to user display name)
+  - Group assignment
+  - Recipient information
+  - Title and content
+- Reply to existing posts with full context
+- Group management for better organization
 - Real-time updates using Firebase
 
 ## Project Structure
@@ -29,11 +34,12 @@ src/
 |-- pages/
 |   |-- Login.tsx              # Login page
 |   |-- ReportsList.tsx        # Reports listing page
-|   `-- ReportContent.tsx      # Report content page
+|   |-- ReportContent.tsx      # Report content page
+|   `-- GroupSettings.tsx      # Group management page
 |-- services/
 |   |-- auth.ts                # Authentication services
 |   |-- firebase.ts            # Firebase configuration
-|   `-- reports.ts             # Report data services
+|   `-- reports.ts             # Report data services (threads, posts, groups)
 |-- types/
 |   `-- index.ts               # Type definitions
 |-- utils/
@@ -84,12 +90,15 @@ src/
 The app uses the following Firestore collections:
 
 - **threads**: For top-level thread information
-  - Fields: title, createdAt, authorId, authorName, rootPostId
+  - Fields: title, createdAt, authorId, authorName, rootPostId, group, recipient
 
 - **posts**: For individual posts within threads
-  - Fields: content, createdAt, updatedAt, authorId, authorName, authorPhotoURL, parentId, threadId, childrenIds
+  - Fields: content, createdAt, updatedAt, authorId, authorName, authorPhotoURL, parentId, threadId, childrenIds, group, recipient, title
 
-This structure allows for efficient queries and maintains the threaded discussion hierarchy.
+- **groups**: For organization group management
+  - Fields: name, createdAt
+
+This structure allows for efficient queries and maintains the threaded discussion hierarchy while providing organization through groups.
 
 ## Deployment
 
@@ -108,3 +117,18 @@ You can then deploy the contents of the `build` directory to any static hosting 
 - Firebase (Authentication and Firestore)
 - Material-UI
 - React Router
+
+## Usage
+
+1. **Login**: Access the application and authenticate with your Google account.
+2. **View Reports**: Browse through the list of existing report threads.
+3. **Create Thread**: Click "New Thread" button to create a new discussion thread.
+   - Fill in your name (defaults to your Google account name)
+   - Optionally select a group for categorization
+   - Add recipient information if needed
+   - Provide a title and content for your thread
+4. **Reply to Posts**: Click the "Reply" button on any post to respond.
+   - Include optional fields like group, recipient, and title
+5. **Manage Groups**: Navigate to Group Settings from the Reports page.
+   - Add, edit, or delete groups as needed
+   - Groups will be available for selection when creating posts or threads
