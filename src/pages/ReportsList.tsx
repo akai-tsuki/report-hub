@@ -13,7 +13,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import { getThreads, getThreadsWithRootPosts } from "../services/reports";
-import { ReportThread, ReportPostWithChildren, ReportPost } from "../types";
+import { ReportThread, ReportPostWithChildren, ReportPost, PriorityLevel } from "../types";
 import { useAuth } from "../context/AuthContext";
 import ThreadListItem from "../components/reports/ThreadListItem";
 import ThreadPostsTree from "../components/reports/ThreadPostsTree";
